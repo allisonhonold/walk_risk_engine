@@ -13,19 +13,23 @@ from datetime import datetime, timedelta, date
 import requests
 import json
 from pymongo import MongoClient
+from typing import List
 
 # secret file location
 secret_loc = "/Users/allisonhonold/.secrets/dark_sky_api.json"
 
 def main():
-    # load dates from 01/01/2006 to most recent
+    # get most recent date from NYC's year to date arrests
     final_date_df = pd.read_csv('../nyc_ytd.csv', 
                         usecols=['ARREST_DATE'],
                         nrows=2)
     final_date = datetime.strptime(final_date_df.loc[0, 'ARREST_DATE'], '%m/%d/%Y')
+    
+    # set initial date to 1/1/2006
     initial_date = datetime.strptime('01/01/2006', '%m/%d/%Y')
-    dates = [initial_date + timedelta(x) for x in range(int((final_date - initial_date).days)+1)]
 
+    # get list of dates in data range
+    dates = get_dates_list(initial_date, final_date)
 
     # load secret key
     with open(secret_loc, "r") as f:
@@ -60,33 +64,40 @@ def main():
     #     get_weather(date, ny_lat_long[0], ny_lat_long[1],
     #                 dk_sky_url, excl, key, weather)
 
-    # get_weather for next 1000 dates - Tues
-    for date in dates[1999:2999]:
-        ny_lat_long = (40.7420, -73.9073) # atlasobscura.com
-        dk_sky_url = 'https://api.darksky.net/forecast/'
-        get_weather(date, ny_lat_long[0], ny_lat_long[1],
-                    dk_sky_url, excl, key, weather)
+    # get_weather for next 1000 dates - Tues - done
+    # for date in dates[1999:2999]:
+    #     ny_lat_long = (40.7420, -73.9073) # atlasobscura.com
+    #     dk_sky_url = 'https://api.darksky.net/forecast/'
+    #     get_weather(date, ny_lat_long[0], ny_lat_long[1],
+    #                 dk_sky_url, excl, key, weather)
 
-    # get_weather for next 1000 dates - Weds
+    # get_weather for next 1000 dates - Weds - done
     # for date in dates[2999:3999]:
     #     ny_lat_long = (40.7420, -73.9073) # atlasobscura.com
     #     dk_sky_url = 'https://api.darksky.net/forecast/'
     #     get_weather(date, ny_lat_long[0], ny_lat_long[1],
     #                 dk_sky_url, excl, key, weather)
 
-    # get_weather for next 1000 dates - Thurs
+    # get_weather for next 1000 dates - Thurs - done
     # for date in dates[3999:4999]:
     #     ny_lat_long = (40.7420, -73.9073) # atlasobscura.com
     #     dk_sky_url = 'https://api.darksky.net/forecast/'
     #     get_weather(date, ny_lat_long[0], ny_lat_long[1],
     #                 dk_sky_url, excl, key, weather)
 
-    # get_weather for remaining dates - Fri
+    # get_weather for remaining dates - Fri - done
     # for date in dates[4999:len(dates)]:
     #     ny_lat_long = (40.7420, -73.9073) # atlasobscura.com
     #     dk_sky_url = 'https://api.darksky.net/forecast/'
     #     get_weather(date, ny_lat_long[0], ny_lat_long[1],
     #                 dk_sky_url, excl, key, weather)
+
+def get_dates_list(initial_date: datetime, 
+                   final_date: datetime) -> List[datetime]:
+    """Create a list of datetime objects with each date between the initial_date
+    and final_date.
+    """
+    return [initial_date + timedelta(x) for x in range(int((final_date - initial_date).days)+1)]
 
 def get_weather(date: datetime, lat, long, base_url, exclusions, 
                 secret_key, collection):
