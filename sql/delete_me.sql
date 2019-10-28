@@ -1,16 +1,14 @@
 /*
 Object:         Materialized View
-Author:         Aaron Chen
-Script Date:    September 19, 2019
-Description:    [fill me in]
+Author:         Allison Honold
+Script Date:    October 19, 2019
+Description:    
 */
 
 -- CREATE MATERIALIZED VIEW lat_long_day_arrests AS
     SELECT 
         lat_long,
         arrest_date,
-        -- pd_cd as code,
-        -- pd_desc as descrip,
         SUM(n_arrests) as num
     FROM (
         SELECT 
