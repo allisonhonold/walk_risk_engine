@@ -7,13 +7,28 @@ Description:    Creates a materialized view with a combined column of lat
                 location on that day.
 */
 
-CREATE MATERIALIZED VIEW location_day_arrests AS
+CREATE MATERIALIZED VIEW location_day_arrests_weather AS
     SELECT 
-        points.latitude, 
-        points.longitude, 
-        latlong_pts.lat_long,
-        n_arrests, 
-        nyc_weather.*
+        CAST(points.latitude AS REAL), 
+        CAST(points.longitude AS REAL), 
+        CAST(dates.date AS DATE),
+        CAST(n_arrests AS SMALLINT), 
+        CAST("apparentTemperatureHigh"*100 AS SMALLINT) as ap_t_high100,
+        CAST("apparentTemperatureLow"*100 AS SMALLINT) as ap_t_low100,
+        CAST("cloudCover"*100 AS SMALLINT) as cloud,
+        CAST(humidity*100 AS SMALLINT) as humidity,
+        icon,
+        CAST("moonPhase"*100 AS SMALLINT) as moon_phase,
+        CAST("precipIntensityMax"*10000 AS SMALLINT) as precip_inten_max10000,
+        CAST("precipProbability"*100 AS SMALLINT) as precip_proba100,
+        "precipType",
+        CAST(pressure AS SMALLINT) as pressure,
+        CAST("sunriseTime" AS INTEGER),
+        CAST("sunsetTime" AS INTEGER),
+        CAST("uvIndex" AS SMALLINT),
+        CAST("windGust"*100 AS SMALLINT) as wind_gust100,
+        CAST("precipAccumulation"*100 AS SMALLINT) as precip_accum100,
+        CAST(ozone*10 AS SMALLINT) as ozone10
     FROM points
     CROSS JOIN dates
     JOIN (
@@ -31,4 +46,5 @@ CREATE MATERIALIZED VIEW location_day_arrests AS
         ON latlong_pts.lat_long = lat_long_daily_arrest_counts.lat_long
             AND lat_long_daily_arrest_counts.arrest_date = dates.date
     JOIN nyc_weather
-        ON nyc_weather.date = dates.date;
+        ON nyc_weather.date = dates.date
+    WHERE dates.date > CAST('2014-01-01' AS DATE);
