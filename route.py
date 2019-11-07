@@ -86,7 +86,7 @@ def get_pts_near_path(line, distance):
         distance: maximum distance from path for returned points
 
     Returns:
-        geopandas dataframe of all points within distance from line
+        pandas dataframe of all points within distance from line
     """
     # get line bounds
     (minx, miny, maxx, maxy) = line.bounds
@@ -101,7 +101,7 @@ def get_pts_near_path(line, distance):
     all_pts = create_pt_grid(minx, miny, maxx, maxy)
     
     all_pts['on_path'] = on_path(all_pts['geometry'], distance, line)
-    return all_pts.loc[all_pts['on_path']==True]
+    return pd.DataFrame(all_pts.loc[all_pts['on_path']==True])
 
 
 def create_pt_grid(minx, miny, maxx, maxy):
@@ -114,7 +114,7 @@ def create_pt_grid(minx, miny, maxx, maxy):
         maxx: maximum longitude
         maxy: maximum latitude
 
-    Returns: geoDataFrame of all lat/long combinations in region
+    Returns: DataFrame of all lat/long combinations in region
     """
     n_lats = round((maxy-miny)/.001) +1
     lats = np.linspace(miny, maxy, n_lats)
@@ -135,77 +135,6 @@ def on_path(geom_series, dist, line):
         on_path.append(haversine((pt1.y, pt1.x), (ln_pt.y, ln_pt.x), unit='ft') < dist)
     return on_path
 
-
-# maybe break this out into mapping.py
-def get_geojson_grid(upper_right, lower_left, n=6):
-    """Returns a grid of geojson rectangles, and computes the exposure in each 
-    section of the grid based on the vessel data.
-
-    Parameters
-    ----------
-    upper_right: array_like
-        The upper right hand corner of "grid of grids" (the default is the 
-        upper right hand [lat, lon] of the USA).
-
-    lower_left: array_like
-        The lower left hand corner of "grid of grids"  (the default is the 
-        lower left hand [lat, lon] of the USA).
-
-    n: integer
-        The number of rows/columns in the (n,n) grid.
-
-    Returns
-    -------
-
-    list
-        List of "geojson style" dictionary objects   
-    """
-
-    all_boxes = []
-
-    lat_steps = np.linspace(lower_left[0], upper_right[0], n+1)
-    lon_steps = np.linspace(lower_left[1], upper_right[1], n+1)
-
-    lat_stride = lat_steps[1] - lat_steps[0]
-    lon_stride = lon_steps[1] - lon_steps[0]
-
-    for lat in lat_steps[:-1]:
-        for lon in lon_steps[:-1]:
-            # Define dimensions of box in grid
-            upper_left = [lon, lat + lat_stride]
-            upper_right = [lon + lon_stride, lat + lat_stride]
-            lower_right = [lon + lon_stride, lat]
-            lower_left = [lon, lat]
-
-            # Define json coordinates for polygon
-            coordinates = [
-                upper_left,
-                upper_right,
-                lower_right,
-                lower_left,
-                upper_left
-            ]
-
-            geo_json = {"type": "FeatureCollection",
-                        "properties":{
-                            "lower_left": lower_left,
-                            "upper_right": upper_right
-                        },
-                        "features":[]}
-
-            grid_feature = {
-                "type":"Feature",
-                "geometry":{
-                    "type":"Polygon",
-                    "coordinates": [coordinates],
-                }
-            }
-
-            geo_json["features"].append(grid_feature)
-
-            all_boxes.append(geo_json)
-
-    return all_boxes
 
 if __name__ == "__main__":
     main()
