@@ -5,6 +5,8 @@ the weather collection within the walk MongoDB.
 Based on Cristian Nuno's soccer_stats/Weather_Getter and export_weather
 https://github.com/cenuno/soccer_stats/blob/master/python/export_weather.py
 https://github.com/cenuno/soccer_stats/blob/master/python/weathergetter.py
+
+
 """
 
 # load necessary modules
@@ -14,6 +16,8 @@ import requests
 import json
 from pymongo import MongoClient
 from typing import List
+import pandas as pd
+import numpy as np
 
 # secret file location
 secret_loc = "/Users/allisonhonold/.secrets/dark_sky_api.json"
@@ -100,9 +104,10 @@ def get_dates_list(initial_date: datetime,
     """
     return [initial_date + timedelta(x) for x in range(int((final_date - initial_date).days)+1)]
 
-def get_weather(date: datetime, lat, long, 
-                base_url='https://api.darksky.net/forecast/', exclusions, 
-                secret_key, collection):
+def get_weather(date: datetime, lat, long, secret_key,
+                base_url='https://api.darksky.net/forecast/', 
+                exclusions="?exclude=currently,minutely,hourly,alerts,flags", 
+                collection=None):
     """Retrieve weather for a particular date based on exclusions passed.
     Stores weather in mongoDB collection passed
     
@@ -117,14 +122,55 @@ def get_weather(date: datetime, lat, long,
             data in
 
     Returns:
-        None. Data is stored in the collection passed.
+        If no MongoDB collection, returns weather json.
+        Else, data is stored in the collection passed.
     """
     date_str = date.strftime('%Y-%m-%d') + 'T12:00:00'
     url = f"{base_url}{secret_key}/{lat},{long},{date_str}{exclusions}"
     response = requests.get(url)
     output = response.json()
     output['date'] = date
+    if collection == None:
+        return output
     collection.insert_one(output)
+
+
+def prep_weather(weather_data_json, today):
+    """prepares weather data for modeling.
+    
+    Args:
+        weather_df: pandas dataframe of daily weather data json returned by darksky api
+            ex. pd.DataFrame(dk_sky_weather_json['daily']['data'])
+        date: datetime of date
+        
+    Returns: single line weather dataframe only missing lats/longs for model pipeline
+    """
+    weather_df = pd.DataFrame(np.zeros((1,10)), columns=['apparentTemperatureHigh',
+                               'apparentTemperatureLow', 'cloudCover', 'humidity',
+                               'precipIntensityMax', 'precipProbability',
+                               'sunriseTime', 'sunsetTime', 'windGust', 
+                               'precipAccumulation'])
+    for col in weather_df.columns:
+        if col in weather_data_json.keys():
+            weather_df[col] = weather_data_json[col]
+    weather_df['date'] = date
+    weather_df['ap_t_high100'] = int(weather_df['apparentTemperatureHigh']*100)
+    weather_df['ap_t_low100'] = int(weather_df['apparentTemperatureLow']*100)
+    weather_df['cloud'] = int(weather_df['cloudCover']*100)
+    weather_df['humidity'] = int(weather_df['humidity']*100)
+    weather_df['precip_inten_max10000'] = int(weather_df['precipIntensityMax']*10000)
+    weather_df['precip_proba100'] = int(weather_df['precipProbability']*100)
+    weather_df['sunriseTime'].astype(int)
+    weather_df['sunsetTime'].astype(int)
+    weather_df['wind_gust100'] = int(weather_df['windGust']*100)
+    weather_df['precip_accum100'] = int(weather_df['precipAccumulation']*100)
+    weather_df = weather_df.drop(columns=['apparentTemperatureHigh',
+                               'apparentTemperatureLow', 'cloudCover', 'humidity',
+                               'precipIntensityMax', 'precipProbability', 
+                                'windGust', 'precipAccumulation',
+                               ])
+    return weather_df
+
 
 if __name__ == '__main__':
     main()
