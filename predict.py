@@ -25,7 +25,6 @@ def get_arrest_probas(pts_df, day_weather_df):
 def get_overall_proba(path, weather):
     pts = get_pts_near_path(path, 200).reset_index(drop=True)
     arrest_probas = get_arrest_probas(pts, weather)
-    print(arrest_probas)
     return np.prod(arrest_probas)
 
 
