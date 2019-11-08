@@ -47,15 +47,17 @@ def get_results(start_lat, start_long, end_lat, end_long):
         # get predictions and prepare for mapping
         arrest_probas = get_arrest_probas(pts, weather_df)
         pts_proba_df = pd.concat([pts, 
-                                  pd.Series(arrest_probas, 
-                                  name='probability')], 
-                                 axis='columns')
+                                    pd.Series(arrest_probas, 
+                                    name='probability')], 
+                                    axis='columns')
         
         # get map and risk rating
         m = map_predictions(start_lat, start_long, end_lat, end_long, 
                             pts_proba_df)
         risk_rating = get_risk(route, weather_df)
-        
+    
         return m, risk_rating, warning
+
     except:
         print("API error")
+        return "", "", ""
