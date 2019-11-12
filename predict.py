@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from route import get_pts_near_path
 from sqlalchemy import create_engine
-# import psycopg2
 
 def get_arrest_probas(pts_df, day_weather_df):
     """returns predicted arrest probabilities
