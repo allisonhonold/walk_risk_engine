@@ -52,6 +52,7 @@ def extract_route_and_warnings(response_json):
         warnings = []
         if len(response_json['routes'][0]['warnings']) > 0:
             warnings.extend(response_json['routes'][0]['warnings'])
+            warnings = warnings[0]
         rte = pd.DataFrame(polyline.decode(goog_polyline, geojson=True), columns=['longitude', 'latitude'])
         rte = gpd.GeoDataFrame(rte, geometry=gpd.points_from_xy(rte['longitude'], rte['latitude']))
         rte = LineString([[p.x, p.y] for p in rte['geometry']])

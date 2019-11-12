@@ -11,7 +11,7 @@ import pandas as pd
 secret_location_goog = '/Users/allisonhonold/.secrets/google_maps_api.json'
 secret_loc_weather = "/Users/allisonhonold/.secrets/dark_sky_api.json"
 
-def get_results(start_lat, start_long, end_lat, end_long):
+def get_backend_results(start_lat, start_long, end_lat, end_long):
     """gets the walk risk results for a path on the day called
 
     Args:
@@ -55,6 +55,7 @@ def get_results(start_lat, start_long, end_lat, end_long):
         m = map_predictions(start_lat, start_long, end_lat, end_long, 
                             pts_proba_df)
         risk_rating = get_risk(route, weather_df)
+        
     
         return m, risk_rating, warning
 
