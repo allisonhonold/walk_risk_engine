@@ -1,14 +1,3 @@
-"""
-Gets the NYC weather data from dark sky API and dumps it into
-the weather collection within the walk MongoDB.
-
-Based on Cristian Nuno's soccer_stats/Weather_Getter and export_weather
-https://github.com/cenuno/soccer_stats/blob/master/python/export_weather.py
-https://github.com/cenuno/soccer_stats/blob/master/python/weathergetter.py
-
-
-"""
-
 # load necessary modules
 import pandas as pd
 from datetime import datetime, timedelta, date
@@ -23,6 +12,13 @@ import numpy as np
 secret_loc = "/Users/allisonhonold/.secrets/dark_sky_api.json"
 
 def main():
+    """Gets the NYC weather data from dark sky API and dumps it into
+    the weather collection within the walk MongoDB.
+
+    Based on Cristian Nuno's soccer_stats/Weather_Getter and export_weather
+    https://github.com/cenuno/soccer_stats/blob/master/python/export_weather.py
+    https://github.com/cenuno/soccer_stats/blob/master/python/weathergetter.py
+    """
     # get most recent date from NYC's year to date arrests
     final_date_df = pd.read_csv('../nyc_ytd.csv', 
                         usecols=['ARREST_DATE'],
@@ -89,6 +85,7 @@ def main():
     #     get_weather(date, ny_lat_long[0], ny_lat_long[1],
     #                 dk_sky_url, excl, key, weather)
 
+
 def get_dates_list(initial_date: datetime, 
                    final_date: datetime) -> List[datetime]:
     """Create a list of datetime objects with each date between the initial_date
@@ -102,7 +99,9 @@ def get_dates_list(initial_date: datetime,
         a list of datetime objects with a one day interval between the initial
         and final dates.
     """
-    return [initial_date + timedelta(x) for x in range(int((final_date - initial_date).days)+1)]
+    return [initial_date + timedelta(x) 
+            for x in range(int((final_date - initial_date).days)+1)]
+
 
 def get_weather(date: datetime, lat, long, secret_key,
                 base_url='https://api.darksky.net/forecast/', 
@@ -139,15 +138,18 @@ def prep_weather(weather_data_json, today):
     """prepares weather data for modeling.
     
     Args:
-        weather_df: pandas dataframe of daily weather data json returned by darksky api
-            ex. pd.DataFrame(dk_sky_weather_json['daily']['data'])
+        weather_df: pandas dataframe of daily weather data json returned by 
+            darksky api ex. pd.DataFrame(dk_sky_weather_json['daily']['data'])
         date: datetime of date
         
-    Returns: single line weather dataframe only missing lats/longs for model pipeline
+    Returns: single line weather dataframe only missing lats/longs for model 
+        pipeline
     """
-    weather_df = pd.DataFrame(np.zeros((1,10)), columns=['apparentTemperatureHigh',
-                               'apparentTemperatureLow', 'cloudCover', 'humidity',
-                               'precipIntensityMax', 'precipProbability',
+    weather_df = pd.DataFrame(np.zeros((1,10)), 
+                            columns=['apparentTemperatureHigh',
+                               'apparentTemperatureLow', 'cloudCover', 
+                               'humidity', 'precipIntensityMax', 
+                               'precipProbability',
                                'sunriseTime', 'sunsetTime', 'windGust', 
                                'precipAccumulation'])
     for col in weather_df.columns:
@@ -165,9 +167,10 @@ def prep_weather(weather_data_json, today):
     weather_df['wind_gust100'] = int(weather_df['windGust']*100)
     weather_df['precip_accum100'] = int(weather_df['precipAccumulation']*100)
     weather_df = weather_df.drop(columns=['apparentTemperatureHigh',
-                               'apparentTemperatureLow', 'cloudCover', 'humidity',
-                               'precipIntensityMax', 'precipProbability', 
-                                'windGust', 'precipAccumulation',
+                               'apparentTemperatureLow', 'cloudCover', 
+                               'humidity', 'precipIntensityMax', 
+                               'precipProbability', 'windGust', 
+                               'precipAccumulation',
                                ])
     return weather_df
 

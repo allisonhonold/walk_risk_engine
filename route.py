@@ -53,8 +53,11 @@ def extract_route_and_warnings(response_json):
         if len(response_json['routes'][0]['warnings']) > 0:
             warnings.extend(response_json['routes'][0]['warnings'])
             warnings = warnings[0]
-        rte = pd.DataFrame(polyline.decode(goog_polyline, geojson=True), columns=['longitude', 'latitude'])
-        rte = gpd.GeoDataFrame(rte, geometry=gpd.points_from_xy(rte['longitude'], rte['latitude']))
+        rte = pd.DataFrame(polyline.decode(goog_polyline, geojson=True), 
+                            columns=['longitude', 'latitude'])
+        rte = gpd.GeoDataFrame(rte, 
+                                geometry=gpd.points_from_xy(rte['longitude'], 
+                                                            rte['latitude']))
         rte = LineString([[p.x, p.y] for p in rte['geometry']])
         return rte, warnings
 
@@ -101,7 +104,7 @@ def get_pts_near_path(line, distance):
     # create a df of all lat, longs w/in bounds
     all_pts = create_pt_grid(minx, miny, maxx, maxy)
     
-    all_pts['on_path'] = on_path(all_pts['geometry'], distance, line)
+    all_pts['on_path'] = get_on_path(all_pts['geometry'], distance, line)
     return pd.DataFrame(all_pts.loc[all_pts['on_path']==True])
 
 
@@ -121,19 +124,31 @@ def create_pt_grid(minx, miny, maxx, maxy):
     lats = np.linspace(miny, maxy, n_lats)
     n_longs = round((maxx - minx)/.001) +1
     longs = np.linspace(minx, maxx, n_longs)
-    lat_long_df = pd.DataFrame(product(lats, longs), columns=['latitude', 'longitude'])
+    lat_long_df = pd.DataFrame(product(lats, longs), 
+                    columns=['latitude', 'longitude'])
     geo_df = gpd.GeoDataFrame(lat_long_df,
-                         geometry=gpd.points_from_xy(lat_long_df['longitude'], lat_long_df['latitude']))
+                         geometry=gpd.points_from_xy(lat_long_df['longitude'], 
+                                                    lat_long_df['latitude']))
     return geo_df
 
 
-def on_path(geom_series, dist, line):
+def get_on_path(geom_series, dist, line):
+    """gets the points from the geom_series falling on the path indicated by 
+    the line (within given distance).
+
+    Args:
+        geom_series: series of shapely Points to test
+        dist: max distance from the path that qualifies as on the path
+        line: shapely linestring of the route/path
+    """
     on_path = []
     for index in geom_series.index:
         x = geom_series[index].x
         y = geom_series[index].y
         pt1, ln_pt = nearest_points(Point(x, y), line)
-        on_path.append(haversine((pt1.y, pt1.x), (ln_pt.y, ln_pt.x), unit='ft') < dist)
+        on_path.append(haversine((pt1.y, pt1.x), 
+                                 (ln_pt.y, ln_pt.x), unit='ft')
+                       < dist)
     return on_path
 
 

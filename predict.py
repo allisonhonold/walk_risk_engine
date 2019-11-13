@@ -58,20 +58,45 @@ def get_arrest_probas(pts_df, day_weather_df):
     probas = np.array(output_df['probability'])
     return probas
 
-def get_overall_proba(path, weather):
+def get_overall_proba(path, day_weather):
+    """gets the overall probability of arrest along a path. Uses all lat/long
+    coordinates within 200 feet of the path. Assumes the arrest occurance
+    probabilities are independent for each lat/long along the path.
+
+    Args:
+        path: a shapely Linestring of the recommended walking route
+        weather: a dataframe of weather features for use in predictions
+
+    Returns:
+        a single overall proability of an arrest occuring along the path for
+        the given day and weather conditions
+    """
     pts = get_pts_near_path(path, 200).reset_index(drop=True)
-    arrest_probas = get_arrest_probas(pts, weather)
+    arrest_probas = get_arrest_probas(pts, day_weather)
     return np.prod(arrest_probas)
 
 
 def setup_df_for_preprocessing(pts_df, day_weather_df):
+    """sets up the dataframe based on the inputs for preprocessing by combining
+    the lat/longs in the pts_df data frame with the day/weather information,
+    and eliminating extra columns
+    
+    Args:
+        pts_df: a dataframe of the points of interest
+        day_weather_df: a dataframe with the needed information of the day of
+            interest
+
+    Returns:
+        dataframe with each row representing a lat/long point and the day/
+        weather information repeated for each lat/long
+    """
     pts_df = pts_df.drop(columns=['geometry', 'on_path'])
     for col in day_weather_df.columns:
         pts_df[col] = day_weather_df[col].values[0]
     return pts_df
 
 
-def get_risk(path, weather, cutoffs=[.1, .2, .3, .4]):
+def get_risk(path, day_weather, cutoffs=[.1, .2, .3, .4]):
     """gets the relative risk of a path.
 
     Args:
@@ -85,7 +110,7 @@ def get_risk(path, weather, cutoffs=[.1, .2, .3, .4]):
     Returns:
         tuple (number rating 1-5, rating desciption)
     """
-    proba = get_overall_proba(path, weather)
+    proba = get_overall_proba(path, day_weather)
     if proba < cutoffs[0]:
         return (1, 'low')
     elif proba < cutoffs[1]:
