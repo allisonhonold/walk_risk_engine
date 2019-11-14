@@ -1,5 +1,5 @@
-# too large pickle
-walk1.pickle
+# OS files
+.DS_Store
 
 # VS code files
 .vscode/
