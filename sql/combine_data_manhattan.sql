@@ -4,8 +4,7 @@ Author:         Allison Honold
 Script Date:    October 30, 2019
 Description:    Creates a materialized view with a combined column of lat 
                 and long, the arrest_date, and the number of arrests in that
-                location on that day for Manhattan for dates more recent than
-                2017-01-01.
+                location on that day for Manhattan.
 */
 
 CREATE MATERIALIZED VIEW manhattan_loc_d_ar_wea AS
@@ -48,4 +47,5 @@ CREATE MATERIALIZED VIEW manhattan_loc_d_ar_wea AS
             AND lat_long_daily_arrest_counts.arrest_date = dates.date
     JOIN nyc_weather
         ON nyc_weather.date = dates.date
-    WHERE dates.date > CAST('2018-01-01' AS DATE);
+    -- WHERE dates.date > CAST('2018-01-01' AS DATE)
+    ;
