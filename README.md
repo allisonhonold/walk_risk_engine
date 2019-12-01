@@ -27,7 +27,7 @@ The locations were combined into latlong strings, and then OneHotEncoded.
 The random forest classifier predicts the likelyhood of one or more arrest occuring at each location given the 'latlong', latitude, longitude, and projected apparent high temperature.
 
 ## See it work
-You can check out the flask app online [here](website). Or the repo containing all of the functions needed to take user inputs and display the results on github [here](https://github.com/allisonhonold/walk-flask-app).
+You can check out the flask app online [here](https://should-i-walk.herokuapp.com/). Or the repo containing all of the functions needed to take user inputs and display the results on github [here](https://github.com/allisonhonold/walk-flask-app).
 
 ## Attribution
 [Powered by Dark Sky](https://darksky.net/poweredby/)
@@ -36,4 +36,4 @@ You can check out the flask app online [here](website). Or the repo containing a
 
 [NYPD Arrests Data (Year to Date)](https://data.cityofnewyork.us/Public-Safety/NYPD-Arrest-Data-Year-to-Date-/uip8-fykc)
 
-![powered by Google](powered_by_google_on_white.png)
+![powered by Google](images/powered_by_google_on_white.png)
