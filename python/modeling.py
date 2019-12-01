@@ -49,9 +49,9 @@ def categorize_arrests(dataframe):
         with 1 and 0 for arrest(s)/no arrests
     """
     cat_df = dataframe.copy()
+    cat_df['n_arrests'] = cat_df['n_arrests'].fillna(value=0)
     cat_df['n_arrests'] = cat_df['n_arrests'].astype(int)
     cat_df.loc[cat_df['n_arrests'] > 0, 'n_arrests'] = 1
-    cat_df['n_arrests'] = cat_df['n_arrests'].fillna(value=0)
     return cat_df
 
 
@@ -76,9 +76,9 @@ def split_last(dataframe, target_col, sort_col='date', cut=.9):
     first_df = dataframe.reset_index(drop=True).loc[:cutoff]
     last_df = dataframe.reset_index(drop=True).loc[cutoff:]
     X_train = first_df.drop(columns=[target_col])
-    y_train = first_df[target_col]
+    y_train = np.array(first_df[target_col]).ravel()
     X_eval = last_df.drop(columns=[target_col])
-    y_eval = last_df[target_col]
+    y_eval = np.array(last_df[target_col]).ravel()
     return X_train, y_train, X_eval, y_eval
 
 
